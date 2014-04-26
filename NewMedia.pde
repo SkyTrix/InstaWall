@@ -2,8 +2,11 @@ import com.onformative.leap.*;
 import com.leapmotion.leap.*;
 
 LeapMotionP5 leap;
+
 PFont keyboardFont;
+String keyboardString = "DEMO";
 boolean keyboardButtonPressed = false;
+boolean userPressedDown = false;
 
 void setup()
 {
@@ -23,8 +26,8 @@ void draw()
     Keyboard kb = new Keyboard(90);
     kb.display();
 
-    if(keyboardButtonPressed)
-    	kb.drawOverlayForPosition(mouseX, mouseY);
+    if(userPressedDown && keyboardButtonPressed)
+        kb.drawOverlayForPosition(mouseX, mouseY);
     
     // if there's a finger on screen
     if(leap.getFingerList().size() > 0)
@@ -40,20 +43,46 @@ void draw()
 
         if(position.z < 250)
         {
-            if(!keyboardButtonPressed)
+            if(!userPressedDown)
             {
-                // Do action with key
                 String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
-                println("key: " + key);
-                mouseX = (int)position.x;
-                mouseY = (int)position.y + keyboardMouseYOffset;
-                keyboardButtonPressed = true;
+                if(key != null)
+                {
+                    keyboardButtonPressed = true;
+                    handleKeyPressed(key);
+                    println("key: " + key);
+                    mouseX = (int)position.x;
+                    mouseY = (int)position.y + keyboardMouseYOffset;
+                }
+
+                userPressedDown = true;
             }
         }
         else
         {
+            userPressedDown = false;
             keyboardButtonPressed = false;
         }
+    }
+
+    textFont(keyboardFont);
+    textSize(50);
+    textAlign(CENTER);
+    text(keyboardString, 0, 200, width, 60);
+}
+
+void handleKeyPressed(String key)
+{
+    if(key == "BKSP")
+    {
+        if (keyboardString.length() > 0)
+        {
+            keyboardString = keyboardString.substring(0, keyboardString.length() - 1);
+        }
+    }
+    else
+    {
+        keyboardString += key;
     }
 }
 
