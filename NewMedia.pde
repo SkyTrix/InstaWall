@@ -22,27 +22,31 @@ void draw()
 
     Keyboard kb = new Keyboard(90);
     kb.display();
-    kb.drawOverlayForPosition(mouseX, mouseY);
+
+    if(keyboardButtonPressed)
+    	kb.drawOverlayForPosition(mouseX, mouseY);
     
     // if there's a finger on screen
     if(leap.getFingerList().size() > 0)
     {
         pushMatrix();
+        int keyboardMouseYOffset = 200;
         Finger finger = leap.getFingerList().get(0);
         PVector position = leap.getTip(finger);
-        translate(position.x, position.y + 100);
+        translate(position.x, position.y + keyboardMouseYOffset);
         fill(255);
-        ellipse(0, 0, 10, 10);
+        ellipse(0, 0, 15, 15);
         popMatrix();
 
-        if(position.z < 100)
+        if(position.z < 250)
         {
             if(!keyboardButtonPressed)
             {
                 // Do action with key
-                String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y);
+                String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
+                println("key: " + key);
                 mouseX = (int)position.x;
-                mouseY = (int)position.y;
+                mouseY = (int)position.y + keyboardMouseYOffset;
                 keyboardButtonPressed = true;
             }
         }
@@ -161,6 +165,8 @@ class Keyboard
                     {
                         rect(this.x + j * buttonSize, this.y + i * buttonSize, buttonSize, buttonSize, r, r, r, r); 
                     }
+
+                    return;
                 }
             }
         }
