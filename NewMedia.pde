@@ -3,6 +3,7 @@ import com.leapmotion.leap.*;
 
 LeapMotionP5 leap;
 
+Keyboard kb;
 PFont keyboardFont;
 String keyboardString = "DEMO";
 boolean keyboardButtonPressed = false;
@@ -14,6 +15,8 @@ void setup()
     //size(displayWidth, displayHeight);
     //noCursor();
 
+    kb = new Keyboard(90);
+
     leap = new LeapMotionP5(this);
     keyboardFont = createFont("HelveticaNeueLight", 48);
 }
@@ -23,10 +26,9 @@ void draw()
     background(0);
     noStroke();
 
-    Keyboard kb = new Keyboard(90);
     kb.display();
 
-    if(userPressedDown && keyboardButtonPressed)
+    if(!kb.hidden && !kb.animating && userPressedDown && keyboardButtonPressed)
         kb.drawOverlayForPosition(mouseX, mouseY);
     
     // if there's a finger on screen
@@ -45,15 +47,26 @@ void draw()
         {
             if(!userPressedDown)
             {
-                String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
-                if(key != null)
+                // check if press on keyboard
+                if(!kb.hidden && !kb.animating)
                 {
-                    keyboardButtonPressed = true;
-                    handleKeyPressed(key);
-                    println("key: " + key);
-                    mouseX = (int)position.x;
-                    mouseY = (int)position.y + keyboardMouseYOffset;
+                    println(kb.hidden);
+
+                    String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
+                    if(key != null)
+                    {
+                        keyboardButtonPressed = true;
+                        handleKeyPressed(key);
+                        println("key: " + key);
+                        mouseX = (int)position.x;
+                        mouseY = (int)position.y + keyboardMouseYOffset;
+
+                        kb.drawOverlayForPosition(mouseX, mouseY);
+                    }
                 }
+
+                if(!kb.animating && kb.hidden)
+                    kb.setHidden(!kb.hidden, true);
 
                 userPressedDown = true;
             }
@@ -79,6 +92,8 @@ void handleKeyPressed(String key)
         {
             keyboardString = keyboardString.substring(0, keyboardString.length() - 1);
         }
+
+        kb.setHidden(true, true);
     }
     else
     {
@@ -95,6 +110,12 @@ class Keyboard
 {
     int x, y, buttonSize, fontSize;
     int r = 5;
+
+    int currentY;
+    boolean hidden = false;
+    boolean animating = false;
+    float animationDuration = .5;
+    int timer;
 
     String[][] letters = {
         {
@@ -114,6 +135,8 @@ class Keyboard
         this.y = height - letters.length * buttonSize;
         this.buttonSize = buttonSize;
         this.fontSize = ceil(buttonSize / 2);
+
+        this.currentY = this.y;
     }
 
     void display()
@@ -125,13 +148,55 @@ class Keyboard
         textFont(keyboardFont);
         textAlign(CENTER);
 
+        // animation
+        if(this.hidden)
+        {
+            if(this.animating)
+            {
+                float offset = (this.timer - millis()) * 0.001 * letters.length * buttonSize / this.animationDuration;
+                this.currentY = this.y - (int)offset;
+
+                if(this.currentY >= height)
+                {
+                    this.currentY = height;
+                    this.animating = false;
+                    //this.hidden = false;
+                }
+            }
+            else
+            {
+                this.currentY = height;
+                //this.hidden = false;
+            }
+        }
+        else
+        {
+            if(this.animating)
+            {
+                float offset = (this.timer - millis()) * 0.001 * letters.length * buttonSize / this.animationDuration;
+                this.currentY = height + (int)offset;
+
+                if(this.currentY <= this.y)
+                {
+                    this.currentY = this.y;
+                    this.animating = false;
+                    //this.hidden = true;
+                }
+            }
+            else
+            {
+                this.currentY = this.y;
+                //this.hidden = true;
+            }
+        }
+
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < columns; j++)
             {
                 // draw shape
-                curX = j * buttonSize + x;
-                curY = i * buttonSize + y;
+                curX = j * buttonSize + this.x;
+                curY = i * buttonSize + this.currentY;
                 fill(255, 176, 3);
                 stroke(0);
                 strokeWeight(1);
@@ -224,5 +289,15 @@ class Keyboard
         }
 
         return null;
+    }
+
+    void setHidden(boolean hidden, boolean animated)
+    {
+        if(hidden != this.hidden)
+        {
+            kb.timer = millis();
+            this.hidden = hidden;
+            this.animating = animated;
+        }
     }   
 }
