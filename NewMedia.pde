@@ -50,8 +50,6 @@ void draw()
                 // check if press on keyboard
                 if(!kb.hidden && !kb.animating)
                 {
-                    println(kb.hidden);
-
                     String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
                     if(key != null)
                     {
@@ -180,13 +178,11 @@ class Keyboard
                 {
                     this.currentY = this.y;
                     this.animating = false;
-                    //this.hidden = true;
                 }
             }
             else
             {
                 this.currentY = this.y;
-                //this.hidden = true;
             }
         }
 
