@@ -115,7 +115,7 @@ void refreshInstagramFeed()
 
                 for(MediaFeedData data : instagramMediaFeeds)
                 {
-                    println(data.getImages().getStandardResolution().getImageUrl());
+                    println(data.getImages().getLowResolution().getImageUrl());
                 }
 
                 println("Instagrams: " + instagramMediaFeeds.size());
@@ -135,14 +135,18 @@ void refreshInstagramFeed()
 
 void handleKeyPressed(String key)
 {
-    if(key == "BKSP")
+    if(key == "ENTER")
+    {
+        refreshInstagramFeed();
+
+        kb.setHidden(true, true);
+    }
+    else if(key == "BKSP")
     {
         if (keyboardString.length() > 0)
         {
             keyboardString = keyboardString.substring(0, keyboardString.length() - 1);
         }
-
-        kb.setHidden(true, true);
     }
     else
     {
@@ -253,11 +257,11 @@ class Keyboard
 
                     if (j == 6)
                     {
-                        text("SPACE", curX, curY + 19, buttonSize * 2, buttonSize);
+                        text("BKSP", curX, curY + 19, buttonSize * 2, buttonSize);
                     }
                     else if(j == 8)
                     {
-                        text("BKSP", curX, curY + 19, buttonSize * 2, buttonSize);
+                        text("ENTER", curX, curY + 19, buttonSize * 2, buttonSize);
                     }
 
                     j++;
@@ -324,6 +328,9 @@ class Keyboard
                 if(x >= this.x + j * buttonSize && x <= this.x + (j + 1) * buttonSize && y >= this.y + i * buttonSize && y <= this.y + (i + 1) * buttonSize)
                 {
                     if(i == 3 && j > 7)
+                        return "ENTER";
+
+                    if(i == 3 && j > 5)
                         return "BKSP";
 
                     return letters[i][j];
