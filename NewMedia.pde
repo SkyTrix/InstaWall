@@ -4,12 +4,14 @@ import java.util.*;
 
 private static final String INSTAGRAM_CLIENT_ID = "***REMOVED***";
 Instagram instagram;
+List<MediaFeedData> instagramMediaFeeds;
+boolean refreshedInstagramFeed = false;
 
 LeapMotionP5 leap;
 
 Keyboard kb;
 PFont keyboardFont;
-String keyboardString = "DEMO";
+String keyboardString = "NMCT";
 boolean keyboardButtonPressed = false;
 boolean userPressedDown = false;
 
@@ -25,30 +27,7 @@ void setup()
     keyboardFont = createFont("HelveticaNeueLight", 48);
 
     instagram = new Instagram(INSTAGRAM_CLIENT_ID);
-
-    new Thread(new Runnable()
-    {
-        public void run()
-        {
-            try 
-            {
-                String tagName = "nmct";
-                TagMediaFeed mediaFeed = instagram.getRecentMediaTags(tagName);
-
-                List<MediaFeedData> mediaFeeds = mediaFeed.getData();
-                for(MediaFeedData data : mediaFeeds)
-                {
-                    println(data.getImages().getStandardResolution().getImageUrl());
-                }
-            } 
-            catch (Exception e)
-            {
-                println(e.getMessage());
-
-            }
-            
-        }
-    }).start();
+    refreshInstagramFeed();
 }
 
 void draw()
@@ -109,8 +88,50 @@ void draw()
     textFont(keyboardFont);
     textSize(50);
     textAlign(CENTER);
-    text(keyboardString, 0, 200, width, 60);
+    text(keyboardString, 0, 100, width, 60);
 }
+
+boolean sketchFullScreen()
+{
+    return false;
+}
+
+/*
+    Instagram
+*/
+
+void refreshInstagramFeed()
+{
+    new Thread(new Runnable()
+    {
+        public void run()
+        {
+            try
+            {
+                TagMediaFeed mediaFeed = instagram.getRecentMediaTags(keyboardString);
+
+                instagramMediaFeeds = mediaFeed.getData();
+                refreshedInstagramFeed = true;
+
+                for(MediaFeedData data : instagramMediaFeeds)
+                {
+                    println(data.getImages().getStandardResolution().getImageUrl());
+                }
+
+                println("Instagrams: " + instagramMediaFeeds.size());
+            }
+            catch (Exception e)
+            {
+                println(e.getMessage());
+
+            }
+        }
+    }).start();
+}
+
+/*
+    Keyboard
+*/
 
 void handleKeyPressed(String key)
 {
@@ -127,11 +148,6 @@ void handleKeyPressed(String key)
     {
         keyboardString += key;
     }
-}
-
-boolean sketchFullScreen()
-{
-    return false;
 }
 
 class Keyboard
@@ -191,13 +207,11 @@ class Keyboard
                 {
                     this.currentY = height;
                     this.animating = false;
-                    //this.hidden = false;
                 }
             }
             else
             {
                 this.currentY = height;
-                //this.hidden = false;
             }
         }
         else
