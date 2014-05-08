@@ -1,5 +1,9 @@
 import com.onformative.leap.*;
 import com.leapmotion.leap.*;
+import java.util.*;
+
+private static final String INSTAGRAM_CLIENT_ID = "***REMOVED***";
+Instagram instagram;
 
 LeapMotionP5 leap;
 
@@ -19,6 +23,32 @@ void setup()
 
     leap = new LeapMotionP5(this);
     keyboardFont = createFont("HelveticaNeueLight", 48);
+
+    instagram = new Instagram(INSTAGRAM_CLIENT_ID);
+
+    new Thread(new Runnable()
+    {
+        public void run()
+        {
+            try 
+            {
+                String tagName = "nmct";
+                TagMediaFeed mediaFeed = instagram.getRecentMediaTags(tagName);
+
+                List<MediaFeedData> mediaFeeds = mediaFeed.getData();
+                for(MediaFeedData data : mediaFeeds)
+                {
+                    println(data.getImages().getStandardResolution().getImageUrl());
+                }
+            } 
+            catch (Exception e)
+            {
+                println(e.getMessage());
+
+            }
+            
+        }
+    }).start();
 }
 
 void draw()
@@ -117,6 +147,9 @@ class Keyboard
 
     String[][] letters = {
         {
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+        },
+        {
             "A", "Z", "E", "R", "T", "Y", "U", "I", "O", "P"
         }
         , {
@@ -197,7 +230,7 @@ class Keyboard
                 stroke(0);
                 strokeWeight(1);
 
-                if (i == 2 && (j == 6 || j == 8))
+                if (i == 3 && (j == 6 || j == 8))
                 {
                     fill(#009BFF);
                     rect(curX, curY, buttonSize * 2, buttonSize, r, r, r, r);
@@ -243,11 +276,11 @@ class Keyboard
                     fill(0, 50);
                     noStroke();
 
-                    if(i == 2 && j > 7)
+                    if(i == 3 && j > 7)
                     {
                         rect(this.x + 8 * buttonSize, this.y + i * buttonSize, buttonSize * 2, buttonSize, r, r, r, r);
                     }
-                    else if (i == 2 && j > 5)
+                    else if (i == 3 && j > 5)
                     {
                         rect(this.x + 6 * buttonSize, this.y + i * buttonSize, buttonSize * 2, buttonSize, r, r, r, r);
                     }
@@ -276,7 +309,7 @@ class Keyboard
             {
                 if(x >= this.x + j * buttonSize && x <= this.x + (j + 1) * buttonSize && y >= this.y + i * buttonSize && y <= this.y + (i + 1) * buttonSize)
                 {
-                    if(i == 2 && j > 7)
+                    if(i == 3 && j > 7)
                         return "BKSP";
 
                     return letters[i][j];
