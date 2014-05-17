@@ -6,7 +6,7 @@ import java.util.concurrent.*;
 private static final String INSTAGRAM_CLIENT_ID = "***REMOVED***";
 Instagram instagram;
 List<MediaFeedData> instagramMediaFeeds = Collections.synchronizedList(new ArrayList<MediaFeedData>());
-Map<String, PImage> imageLookupMap = Collections.synchronizedMap(new HashMap<String, PImage>());
+Map<String, PImage> imageLookupMap = new ConcurrentHashMap<String, PImage>();
 boolean refreshedInstagramFeed = false;
 
 LeapMotionP5 leap;
@@ -177,7 +177,7 @@ void downloadInstagramImages()
                 String url = data.getImages().getLowResolution().getImageUrl();
                 PImage img = loadImage(url);
                 imageLookupMap.put(data.getId(), img);
-                println("downloaded image: " + url);
+                //println("downloaded image: " + url);
             }
         });
     }
