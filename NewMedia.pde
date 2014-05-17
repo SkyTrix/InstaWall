@@ -1,5 +1,6 @@
 import com.onformative.leap.*;
 import com.leapmotion.leap.*;
+import com.leapmotion.leap.Gesture.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -12,6 +13,7 @@ int refreshInterval = 10000; // milliseconds
 int lastTime;
 
 LeapMotionP5 leap;
+PImage clockImage;
 
 Keyboard kb;
 PFont keyboardFont;
@@ -32,9 +34,12 @@ void setup()
 
     lastTime = millis();
 
+    clockImage = loadImage("clock.png");
+
     kb = new Keyboard(90);
 
     leap = new LeapMotionP5(this);
+    leap.enableGesture(Type.TYPE_SWIPE);
     keyboardFont = createFont("HelveticaNeueLight", 48);
 
     instagram = new Instagram(INSTAGRAM_CLIENT_ID);
@@ -46,7 +51,10 @@ void draw()
     background(0);
     noStroke();
 
-    checkTimer();
+    if(kb.hidden && !kb.animating)
+        checkTimer();
+
+    drawTopBar();
 
     synchronized(instagramMediaFeeds)
     {
@@ -58,7 +66,7 @@ void draw()
             if(imageLookupMap.containsKey(id))
             {
                 PImage img = imageLookupMap.get(id);
-                image(img, (i % 10) * 153, floor((float)i / 10) * 153, 153, 153);
+                image(img, (i % 10) * 153, 44 + floor((float)i / 10) * 153, 153, 153);
                 //println("found key " + id);
             }
             else
@@ -107,9 +115,6 @@ void draw()
                     }
                 }
 
-                if(!kb.animating && kb.hidden)
-                    kb.setHidden(!kb.hidden, true);
-
                 userPressedDown = true;
             }
         }
@@ -120,14 +125,30 @@ void draw()
         }
     }
 
-    fill(0, 200);
-    noStroke();
-    rect((width - 300)/2, 90, 300, 80);
+    if(!kb.hidden && !kb.animating)
+    {
+        fill(0, 210);
+        noStroke();
+        int w = (int)textWidth("#" + keyboardString) + 100;
+        rect((width - w)/2, 90, w, 80);
+        fill(255);
+        textFont(keyboardFont);
+        textSize(50);
+        text("#" + keyboardString, 0, 100, width, 60);
+    }
+}
+
+void drawTopBar()
+{
+    fill(255, 176, 3);
+    rect(0, 0, width, 44);
     fill(255);
     textFont(keyboardFont);
-    textSize(50);
-    textAlign(CENTER);
-    text(keyboardString, 0, 100, width, 60);
+    textSize(24);
+    textAlign(LEFT);
+    text("#" + keyboardString, 10, 30);
+    text(nf(hour(), 2) + ":" + nf(minute(), 2), width - 77, 30);
+    image(clockImage, width - 108, 9, 26, 26);
 }
 
 void checkTimer()
@@ -225,6 +246,7 @@ void handleKeyPressed(String key)
     if(key == "ENTER")
     {
         refreshInstagramFeed();
+        lastTime = millis();
 
         kb.setHidden(true, true);
     }
@@ -238,5 +260,34 @@ void handleKeyPressed(String key)
     else
     {
         keyboardString += key;
+    }
+}
+
+public void swipeGestureRecognized(SwipeGesture gesture)
+{
+    if (gesture.state() == State.STATE_STOP)
+    {
+        // System.out.println("//////////////////////////////////////");
+        // System.out.println("Gesture type: " + gesture.type());
+        // System.out.println("ID: " + gesture.id());
+        // System.out.println("Position: " + leap.vectorToPVector(gesture.position()));
+        // System.out.println("Direction: " + gesture.direction());
+        // System.out.println("Duration: " + gesture.durationSeconds() + "s");
+        // System.out.println("//////////////////////////////////////");
+
+        if(kb.hidden && !kb.animating && abs(gesture.direction().get(0)) > 0.6)
+        {
+            println("Swipe detected");
+            kb.setHidden(false, true);
+        }
+
+        if(gesture.direction().get(0) > 0) // RIGHT
+        {
+
+        }
+        else // left
+        {
+
+        }
     }
 }
