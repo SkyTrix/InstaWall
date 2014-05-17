@@ -8,6 +8,8 @@ Instagram instagram;
 List<MediaFeedData> instagramMediaFeeds = Collections.synchronizedList(new ArrayList<MediaFeedData>());
 Map<String, PImage> imageLookupMap = new ConcurrentHashMap<String, PImage>();
 boolean refreshedInstagramFeed = false;
+int refreshInterval = 30000; // milliseconds
+int lastTime;
 
 LeapMotionP5 leap;
 
@@ -28,6 +30,8 @@ void setup()
     //size(displayWidth, displayHeight);
     //noCursor();
 
+    lastTime = millis();
+
     kb = new Keyboard(90);
 
     leap = new LeapMotionP5(this);
@@ -41,6 +45,8 @@ void draw()
 {
     background(0);
     noStroke();
+
+    checkTimer();
 
     synchronized(instagramMediaFeeds)
     {
@@ -122,6 +128,16 @@ void draw()
     textSize(50);
     textAlign(CENTER);
     text(keyboardString, 0, 100, width, 60);
+}
+
+void checkTimer()
+{
+    int passedTime = millis() - lastTime;
+    if (passedTime > refreshInterval)
+    {
+        refreshInstagramFeed();
+        lastTime = millis();
+    }
 }
 
 /*
