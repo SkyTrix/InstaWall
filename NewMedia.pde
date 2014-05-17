@@ -8,7 +8,7 @@ Instagram instagram;
 List<MediaFeedData> instagramMediaFeeds = Collections.synchronizedList(new ArrayList<MediaFeedData>());
 Map<String, PImage> imageLookupMap = new ConcurrentHashMap<String, PImage>();
 boolean refreshedInstagramFeed = false;
-int refreshInterval = 30000; // milliseconds
+int refreshInterval = 10000; // milliseconds
 int lastTime;
 
 LeapMotionP5 leap;
@@ -186,16 +186,19 @@ void downloadInstagramImages()
     int start = millis();
     for(final MediaFeedData data : instagramMediaFeeds)
     {
-        pool.execute(new Runnable()
+        String id = data.getId();
+        if(!imageLookupMap.containsKey(id))
         {
-            public void run()
+            pool.execute(new Runnable()
             {
-                String url = data.getImages().getLowResolution().getImageUrl();
-                PImage img = loadImage(url);
-                imageLookupMap.put(data.getId(), img);
-                //println("downloaded image: " + url);
-            }
-        });
+                public void run()
+                {
+                    String url = data.getImages().getLowResolution().getImageUrl();
+                    PImage img = loadImage(url);
+                    imageLookupMap.put(data.getId(), img);
+                }
+            });
+        }
     }
 
     try
