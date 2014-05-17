@@ -14,6 +14,7 @@ int lastTime;
 
 LeapMotionP5 leap;
 PImage clockImage;
+PImage placeholderImage;
 
 Keyboard kb;
 PFont keyboardFont;
@@ -23,18 +24,20 @@ boolean userPressedDown = false;
 
 boolean sketchFullScreen()
 {
-    return false;
+    return true;
 }
 
 void setup()
 {
-    size(1200, 600);
-    //size(displayWidth, displayHeight);
+    //size(900, 770);
+    size(displayWidth, displayHeight);
+    //if (frame != null) { frame.setResizable(true); }
     //noCursor();
 
     lastTime = millis();
 
     clockImage = loadImage("clock.png");
+    placeholderImage = loadImage("camera.png");
 
     kb = new Keyboard(90);
 
@@ -48,93 +51,141 @@ void setup()
 
 void draw()
 {
-    background(0);
-    noStroke();
-
-    if(kb.hidden && !kb.animating)
-        checkTimer();
-
-    drawTopBar();
-
-    synchronized(instagramMediaFeeds)
+    try
     {
-        int i = 0;
-        for(MediaFeedData data : instagramMediaFeeds)
-        {
-            String id = data.getId();
+        background(234, 234, 234);
+        noStroke();
 
-            if(imageLookupMap.containsKey(id))
+        if(kb.hidden && !kb.animating)
+            checkTimer();
+
+        drawTopBar();
+
+        synchronized(instagramMediaFeeds)
+        {
+            if(instagramMediaFeeds.size() > 0)
             {
-                PImage img = imageLookupMap.get(id);
-                image(img, (i % 10) * 153, 44 + floor((float)i / 10) * 153, 153, 153);
-                //println("found key " + id);
+                int i = 0;
+
+                int size = 160;
+                int minSpacing = 10;
+                int tilesPerRow = floor(width / (size + minSpacing));
+                int rows = floor((height - 44) / (size + minSpacing));
+                
+                float spacing = (float)(width - tilesPerRow * size) / (float)(tilesPerRow + 1);
+                
+                //float spacing = 10;
+                //float outerSpacing = (float)(width - tilesPerRow * size - (tilesPerRow - 1) * spacing) / 2;
+                //float outerSpacingTop = (float)(height - 44 - rows * size - (rows - 1) * spacing) / 2;
+
+
+                int rowsfitting = floor((height - 44) / (size + spacing));
+
+                fill(#fbfbfb);
+                strokeWeight(1);
+                stroke(#dbdbdb);
+
+                for(MediaFeedData data : instagramMediaFeeds)
+                {
+                    if(floor((float)i / tilesPerRow) == rowsfitting)
+                        break;
+
+                    String id = data.getId();
+                    //rect((i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size, 44 + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size, size, size);
+                    rect((i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size, 44 + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size, size, size);
+
+                    if(imageLookupMap.containsKey(id))
+                    {
+                        PImage img = imageLookupMap.get(id);
+                        //image(img, (i % tilesPerRow ) * spacing + outerSpacing + (i % tilesPerRow) * size + 5, 44 + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
+                        image(img, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + 5, 44 + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
+                    }
+                    else
+                    {
+                        // draw placeholder
+                        //image(placeholderImage, (i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size + (size - 47) / 2, 44 + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
+                        image(placeholderImage, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + (size - 47) / 2, 44 + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
+                    }
+
+                    i++;
+                }
             }
             else
             {
-                // draw placeholder
+                fill(0, 210);
+                noStroke();
+                rect((width - 300)/2, 90, 300, 80);
+                fill(255);
+                textFont(keyboardFont);
+                textAlign(CENTER);
+                textSize(50);
+                text("LOADING", 0, 100, width, 60);    
             }
-
-            i++;
         }
-    }
 
-    kb.display();
+        kb.display();
 
-    if(!kb.hidden && !kb.animating && userPressedDown && keyboardButtonPressed)
-        kb.drawOverlayForPosition(mouseX, mouseY);
-    
-    // if there's a finger on screen
-    if(leap.getFingerList().size() > 0)
-    {
-        pushMatrix();
-        int keyboardMouseYOffset = 200;
-        Finger finger = leap.getFingerList().get(0);
-        PVector position = leap.getTip(finger);
-        translate(position.x, position.y + keyboardMouseYOffset);
-        fill(255);
-        ellipse(0, 0, 15, 15);
-        popMatrix();
-
-        if(position.z < 250)
+        if(!kb.hidden && !kb.animating && userPressedDown && keyboardButtonPressed)
+            kb.drawOverlayForPosition(mouseX, mouseY);
+        
+        // if there's a finger on screen
+        if(leap.getFingerList().size() > 0)
         {
-            if(!userPressedDown)
+            pushMatrix();
+            int keyboardMouseYOffset = 200;
+            Finger finger = leap.getFingerList().get(0);
+            PVector position = leap.getTip(finger);
+            translate(position.x, position.y + keyboardMouseYOffset);
+            stroke(0);
+            fill(255);
+            ellipse(0, 0, 15, 15);
+            popMatrix();
+
+            if(position.z < 250)
             {
-                // check if press on keyboard
-                if(!kb.hidden && !kb.animating)
+                if(!userPressedDown)
                 {
-                    String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
-                    if(key != null)
+                    // check if press on keyboard
+                    if(!kb.hidden && !kb.animating)
                     {
-                        keyboardButtonPressed = true;
-                        handleKeyPressed(key);
-                        println("key: " + key);
-                        mouseX = (int)position.x;
-                        mouseY = (int)position.y + keyboardMouseYOffset;
+                        String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
+                        if(key != null)
+                        {
+                            keyboardButtonPressed = true;
+                            handleKeyPressed(key);
+                            println("key: " + key);
+                            mouseX = (int)position.x;
+                            mouseY = (int)position.y + keyboardMouseYOffset;
 
-                        kb.drawOverlayForPosition(mouseX, mouseY);
+                            kb.drawOverlayForPosition(mouseX, mouseY);
+                        }
                     }
-                }
 
-                userPressedDown = true;
+                    userPressedDown = true;
+                }
+            }
+            else
+            {
+                userPressedDown = false;
+                keyboardButtonPressed = false;
             }
         }
-        else
+
+        if(!kb.hidden && !kb.animating)
         {
-            userPressedDown = false;
-            keyboardButtonPressed = false;
+            fill(0, 210);
+            noStroke();
+            int w = (int)textWidth("#" + keyboardString) + 100;
+            rect((width - w)/2, 90, w, 80);
+            fill(255);
+            textFont(keyboardFont);
+            textSize(50);
+            text("#" + keyboardString, 0, 100, width, 60);
         }
     }
-
-    if(!kb.hidden && !kb.animating)
+    catch (Exception e)
     {
-        fill(0, 210);
-        noStroke();
-        int w = (int)textWidth("#" + keyboardString) + 100;
-        rect((width - w)/2, 90, w, 80);
-        fill(255);
-        textFont(keyboardFont);
-        textSize(50);
-        text("#" + keyboardString, 0, 100, width, 60);
+        println(e.getMessage());
     }
 }
 
