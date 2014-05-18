@@ -189,7 +189,7 @@ class Keyboard
     {
         if(hidden != this.hidden)
         {
-            kb.timer = millis();
+            this.timer = millis();
             this.hidden = hidden;
             this.animating = animated;
         }
