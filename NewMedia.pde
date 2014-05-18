@@ -13,6 +13,7 @@ int refreshInterval = 10000; // milliseconds
 int lastTime;
 
 LeapMotionP5 leap;
+int topBarHeight = 44;
 PImage clockImage;
 PImage placeholderImage;
 
@@ -24,13 +25,13 @@ boolean userPressedDown = false;
 
 boolean sketchFullScreen()
 {
-    return true;
+    return false;
 }
 
 void setup()
 {
-    //size(900, 770);
-    size(displayWidth, displayHeight);
+    size(900, 770);
+    //size(displayWidth, displayHeight);
     //if (frame != null) { frame.setResizable(true); }
     //noCursor();
 
@@ -65,21 +66,33 @@ void draw()
         {
             if(instagramMediaFeeds.size() > 0)
             {
+                int displayMode = 2;
+
                 int i = 0;
 
                 int size = 160;
                 int minSpacing = 10;
                 int tilesPerRow = floor(width / (size + minSpacing));
-                int rows = floor((height - 44) / (size + minSpacing));
+                int rows = floor((height - topBarHeight) / (size + minSpacing));
                 
-                float spacing = (float)(width - tilesPerRow * size) / (float)(tilesPerRow + 1);
-                
-                //float spacing = 10;
-                //float outerSpacing = (float)(width - tilesPerRow * size - (tilesPerRow - 1) * spacing) / 2;
-                //float outerSpacingTop = (float)(height - 44 - rows * size - (rows - 1) * spacing) / 2;
 
+                float spacing = 0;
+                int rowsfitting = 0;
+                float outerSpacing = 0;
+                float outerSpacingTop = 0;
 
-                int rowsfitting = floor((height - 44) / (size + spacing));
+                if(displayMode == 1)
+                {
+                    spacing = (float)(width - tilesPerRow * size) / (float)(tilesPerRow + 1);
+                    rowsfitting = floor((height - topBarHeight) / (size + spacing));
+                }
+                else
+                {
+                    spacing = 10;
+                    outerSpacing = (float)(width - tilesPerRow * size - (tilesPerRow - 1) * spacing) / 2;
+                    outerSpacingTop = (float)(height - topBarHeight - rows * size - (rows - 1) * spacing) / 2;
+                    rowsfitting = floor((height - topBarHeight) / (size + spacing));
+                }
 
                 fill(#fbfbfb);
                 strokeWeight(1);
@@ -91,20 +104,40 @@ void draw()
                         break;
 
                     String id = data.getId();
-                    //rect((i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size, 44 + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size, size, size);
-                    rect((i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size, 44 + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size, size, size);
+
+                    if(displayMode == 1)
+                    {
+                        rect((i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size, topBarHeight + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size, size, size);
+                    }
+                    else
+                    {
+                        rect((i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size, topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size, size, size);
+                    }
 
                     if(imageLookupMap.containsKey(id))
                     {
                         PImage img = imageLookupMap.get(id);
-                        //image(img, (i % tilesPerRow ) * spacing + outerSpacing + (i % tilesPerRow) * size + 5, 44 + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
-                        image(img, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + 5, 44 + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
+
+                        if(displayMode == 1)
+                        {
+                            image(img, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + 5, topBarHeight + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
+                        }
+                        else
+                        {
+                            image(img, (i % tilesPerRow ) * spacing + outerSpacing + (i % tilesPerRow) * size + 5, topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
+                        }
                     }
                     else
                     {
                         // draw placeholder
-                        //image(placeholderImage, (i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size + (size - 47) / 2, 44 + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
-                        image(placeholderImage, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + (size - 47) / 2, 44 + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
+                        if(displayMode == 1)
+                        {
+                            image(placeholderImage, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + (size - 47) / 2, topBarHeight + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
+                        }
+                        else
+                        {
+                            image(placeholderImage, (i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size + (size - 47) / 2, topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
+                        }
                     }
 
                     i++;
@@ -192,7 +225,7 @@ void draw()
 void drawTopBar()
 {
     fill(255, 176, 3);
-    rect(0, 0, width, 44);
+    rect(0, 0, width, topBarHeight);
     fill(255);
     textFont(keyboardFont);
     textSize(24);
