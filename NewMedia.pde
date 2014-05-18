@@ -25,6 +25,7 @@ int lastGestureTime = millis();
 Keyboard kb;
 PFont keyboardFont;
 String keyboardString = "NMCT";
+String hashtag = keyboardString;
 boolean keyboardButtonPressed = false;
 boolean userPressedDown = false;
 
@@ -72,6 +73,22 @@ void draw()
         if(!kb.hidden && !kb.animating && userPressedDown && keyboardButtonPressed)
             kb.drawOverlayForPosition(mouseX, mouseY);
         
+        // Show keyboard input when editing
+        if(!kb.hidden && !kb.animating)
+        {
+            fill(0, 210);
+            noStroke();
+            int w = (int)textWidth("#" + keyboardString) + 100;
+            rect((width - w)/2, 90, w, 80);
+            fill(255);
+            textFont(keyboardFont);
+            textSize(50);
+            text("#" + keyboardString, 0, 100, width, 60);
+        }
+
+        if(detailMode)
+            drawDetailView();
+
         // if there's a finger on screen
         if(leap.getFingerList().size() > 0)
         {
@@ -127,22 +144,6 @@ void draw()
                 keyboardButtonPressed = false;
             }
         }
-
-        if(detailMode)
-            drawDetailView();
-
-        // Show keyboard input when editing
-        if(!kb.hidden && !kb.animating)
-        {
-            fill(0, 210);
-            noStroke();
-            int w = (int)textWidth("#" + keyboardString) + 100;
-            rect((width - w)/2, 90, w, 80);
-            fill(255);
-            textFont(keyboardFont);
-            textSize(50);
-            text("#" + keyboardString, 0, 100, width, 60);
-        }
     }
     catch (Exception e)
     {
@@ -158,7 +159,7 @@ void drawTopBar()
     textFont(keyboardFont);
     textSize(24);
     textAlign(LEFT);
-    text("#" + keyboardString, 10, 30);
+    text("#" + hashtag, 10, 30);
     text(nf(hour(), 2) + ":" + nf(minute(), 2), width - 77, 30);
     image(clockImage, width - 108, 9, 26, 26);
 }
@@ -337,7 +338,7 @@ void refreshInstagramFeed()
                 List<MediaFeedData> feed = new ArrayList<MediaFeedData>();
 
                 // get first 20
-                TagMediaFeed mediaFeed = instagram.getRecentMediaTags(keyboardString);
+                TagMediaFeed mediaFeed = instagram.getRecentMediaTags(hashtag);
                 feed.addAll(mediaFeed.getData());
 
                 // add second 20
@@ -410,6 +411,7 @@ void handleKeyPressed(String key)
 {
     if(key == "ENTER")
     {
+        hashtag = keyboardString;
         refreshInstagramFeed();
         lastTime = millis();
 
@@ -445,7 +447,13 @@ public void swipeGestureRecognized(SwipeGesture gesture)
         {
             if(!detailMode && kb.hidden && !kb.animating && abs(gesture.direction().get(0)) > 0.6)
             {
+                keyboardString = hashtag;
                 kb.setHidden(false, true);
+            }
+            else if(!detailMode && !kb.hidden && !kb.animating && abs(gesture.direction().get(0)) > 0.6)
+            {
+                keyboardString = hashtag;
+                kb.setHidden(true, true);
             }
             else if(detailMode && kb.hidden && !kb.animating && abs(gesture.direction().get(0)) > 0.6)
             {
