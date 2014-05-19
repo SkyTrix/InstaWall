@@ -31,14 +31,14 @@ boolean userPressedDown = false;
 
 boolean sketchFullScreen()
 {
-    return false;
+    return true;
 }
 
 void setup()
 {
-    size(900, 770);
-    //size(displayWidth, displayHeight);
-    if (frame != null) { frame.setResizable(true); }
+    //size(900, 770);
+    size(displayWidth, displayHeight);
+    //if (frame != null) { frame.setResizable(true); }
     //noCursor();
 
     clockImage = loadImage("clock.png");
@@ -56,23 +56,54 @@ void setup()
 
 void mousePressed()
 {
-    if(!kb.animating && !detailMode)
+    if(mouseButton == LEFT)
     {
-        // find touched picture
-        int index = imageIndexForPositionOnScreen(mouseX, mouseY);
-        if(index != -1)
+        if(!kb.hidden && !kb.animating)
         {
-            detailMode = true;
+            String key = kb.keyForPositionOnKeyboard(mouseX, mouseY);
+            if(key != null)
+            {
+                keyboardButtonPressed = true;
+                handleKeyPressed(key);
 
-            detailImageData = instagramMediaFeeds.get(index);
-            String url = detailImageData.getImages().getStandardResolution().getImageUrl();
-            println("Touched: " + url);
+                kb.drawOverlayForPosition(mouseX, mouseY);
+            }
+        }
+        else if(kb.hidden && !kb.animating && !detailMode)
+        {
+            // find touched picture
+            int index = imageIndexForPositionOnScreen(mouseX, mouseY);
+            if(index != -1)
+            {
+                detailMode = true;
+
+                detailImageData = instagramMediaFeeds.get(index);
+                String url = detailImageData.getImages().getStandardResolution().getImageUrl();
+            }
+        }
+        else
+        {
+            detailMode = false;
+            detailImageData = null;
         }
     }
-    else
+    else if(mouseButton == RIGHT)
     {
-        detailMode = false;
-        detailImageData = null;
+        if(!detailMode && kb.hidden && !kb.animating)
+        {
+            keyboardString = hashtag;
+            kb.setHidden(false, true);
+        }
+        else if(!detailMode && !kb.hidden && !kb.animating)
+        {
+            keyboardString = hashtag;
+            kb.setHidden(true, true);
+        }
+        else if(detailMode && kb.hidden && !kb.animating)
+        {
+            detailMode = false;
+            detailImageData = null;
+        }
     }
 }
 
@@ -194,32 +225,14 @@ void drawGrid()
         {
             imagePositions.clear();
 
-            int displayMode = 2;
-
             int i = 0;
 
             int size = 160;
-            int minSpacing = 20;
-            int tilesPerRow = floor(width / (size + minSpacing));
-            int rows = floor((height - topBarHeight) / (size + minSpacing));
-
-            float spacing = 0;
-            int rowsfitting = 0;
-            float outerSpacing = 0;
-            float outerSpacingTop = 0;
-
-            if(displayMode == 1)
-            {
-                spacing = (float)(width - tilesPerRow * size) / (float)(tilesPerRow + 1);
-                rowsfitting = floor((height - topBarHeight) / (size + spacing));
-            }
-            else
-            {
-                spacing = minSpacing;
-                outerSpacing = (float)(width - tilesPerRow * size - (tilesPerRow - 1) * spacing) / 2;
-                outerSpacingTop = (float)(height - topBarHeight - rows * size - (rows - 1) * spacing) / 2;
-                rowsfitting = floor((height - topBarHeight) / (size + spacing));
-            }
+            float spacing = 15;
+            int tilesPerRow = floor((width - spacing) / (size + spacing));
+            int rows = floor((height - topBarHeight - spacing) / (size + spacing));
+            float outerSpacing = (float)(width - tilesPerRow * size - (tilesPerRow - 1) * spacing) / 2;
+            float outerSpacingTop = (float)(height - topBarHeight - rows * size - (rows - 1) * spacing) / 2;
 
             fill(#fbfbfb);
             strokeWeight(1);
@@ -227,28 +240,16 @@ void drawGrid()
 
             for(MediaFeedData data : instagramMediaFeeds)
             {
-                if(floor((float)i / tilesPerRow) == rowsfitting)
+                if(floor((float)i / tilesPerRow) == rows)
                     break;
 
                 String id = data.getId();
                 float x, y, w, h;
 
-                if(displayMode == 1)
-                {
-                    x = (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size;
-                    y = topBarHeight + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size;
-                    w = size;
-                    h = size;
-                }
-                else
-                {
-                    x = (i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size;
-                    y = topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size;
-                    w = size;
-                    h = size;
-
-                    rect(x, y, size, size);
-                }
+                x = (i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size;
+                y = topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size;
+                w = size;
+                h = size;
 
                 imagePositions.add(new ImageRect(x, y, w, h));
                 rect(x, y, w, h);
@@ -256,27 +257,12 @@ void drawGrid()
                 if(imageLookupMap.containsKey(id))
                 {
                     PImage img = imageLookupMap.get(id);
-
-                    if(displayMode == 1)
-                    {
-                        image(img, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + 5, topBarHeight + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
-                    }
-                    else
-                    {
-                        image(img, (i % tilesPerRow ) * spacing + outerSpacing + (i % tilesPerRow) * size + 5, topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + 5, size - 10, size - 10);
-                    }
+                    image(img, x + 5, y + 5, w - 10, h - 10);
                 }
                 else
                 {
                     // draw placeholder
-                    if(displayMode == 1)
-                    {
-                        image(placeholderImage, (i % tilesPerRow + 1) * spacing + (i % tilesPerRow) * size + (size - 47) / 2, topBarHeight + (floor((float)i / tilesPerRow) + 1) * spacing + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
-                    }
-                    else
-                    {
-                        image(placeholderImage, (i % tilesPerRow) * spacing + outerSpacing + (i % tilesPerRow) * size + (size - 47) / 2, topBarHeight + (floor((float)i / tilesPerRow)) * spacing + outerSpacingTop + floor((float)i / tilesPerRow) * size + (size - 36) / 2, 47, 36);
-                    }
+                    image(placeholderImage, x + (size - 47) / 2, y + (size - 36) / 2, 47, 36);
                 }
 
                 i++;
@@ -402,11 +388,17 @@ void downloadInstagramImages()
                 {
                     public void run()
                     {
-                        String url = data.getImages().getStandardResolution().getImageUrl();
-                        //String url = data.getImages().getLowResolution().getImageUrl();
-                        println(url);
-                        PImage img = loadImage(url);
-                        imageLookupMap.put(data.getId(), img);
+                        try
+                        {
+                            String url = data.getImages().getStandardResolution().getImageUrl();
+                            println(url);
+                            PImage img = loadImage(url);
+                            imageLookupMap.put(data.getId(), img);
+                        }
+                        catch (Exception e)
+                        {
+                            println(e.getMessage());
+                        }
                     }
                 });
             }
@@ -481,15 +473,6 @@ public void swipeGestureRecognized(SwipeGesture gesture)
             {
                 detailMode = false;
                 detailImageData = null;
-            }
-
-            if(gesture.direction().get(0) > 0) // RIGHT
-            {
-
-            }
-            else // left
-            {
-
             }
 
             lastGestureTime = millis();
