@@ -315,6 +315,9 @@ void drawDetailView()
     long seconds = (d2.getTime()-d1.getTime())/1000;
     println("seconds: "+seconds);
 
+    String shortTime = shortTimeInWords(seconds);
+    println("shortTime: "+shortTime);
+
     fill(#fbfbfb);
     strokeWeight(1);
     stroke(0, 0, 0, 127);
@@ -345,7 +348,11 @@ void drawDetailView()
     {
         text(sName, 50, 30);
     }
-    
+
+    textAlign(RIGHT);
+    text(shortTime, 460, 17, 40, 20);
+
+    textAlign(LEFT);
     textSize(14);
     fill(34, 34, 34);
 
@@ -535,7 +542,7 @@ PImage getProfileImageForUser(final User user)
     }
 }
 
-String shortTimeInWords(int seconds)
+String shortTimeInWords(long seconds)
 {
     if(seconds < 60)
     {
