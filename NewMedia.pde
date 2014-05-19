@@ -17,6 +17,7 @@ LeapMotionP5 leap;
 int topBarHeight = 44;
 PImage clockImage;
 PImage placeholderImage;
+PImage profileImage;
 
 MediaFeedData detailImageData;
 boolean detailMode = false;
@@ -43,6 +44,7 @@ void setup()
 
     clockImage = loadImage("clock.png");
     placeholderImage = loadImage("camera.png");
+    profileImage = loadImage("user.jpg");
 
     kb = new Keyboard(90);
 
@@ -289,27 +291,31 @@ void drawDetailView()
 {
     PImage img = imageLookupMap.get(detailImageData.getId());
     String profileImgUrl = detailImageData.getUser().getProfilePictureUrl();
-    PImage profileImg = loadImage(profileImgUrl);
+    println(profileImgUrl);
+
+    // get profile image
+
     fill(#fbfbfb);
     strokeWeight(1);
-    stroke(0, 0, 0, 127);
+    stroke(80);
 
     pushMatrix();
     translate((width - 510)/2, (height - 600)/2);
-    //rect(0, 0, 510, 600);
     textFont(createFont("Helvetica", 16));
 
-    float stringWidth = textWidth(detailImageData.getCaption().getText());
-    int iLines = getCaptionLines(stringWidth);
+    String caption = detailImageData.getCaption().getText();
+    int iLines = getCaptionLines(caption);
 
-    rect(0, 0, 510, 560 + (18*iLines));
+    rect(0, 0, 510, 560 + (18 * iLines));
 
-    image(profileImg, 5, 5, 40, 40);
+    image(profileImage, 5, 5, 40, 40);
     image(img, 5, 50, 500, 500);
+
     fill(63, 115, 151);
     textAlign(LEFT);
     textSize(16);
     text(detailImageData.getUser().getFullName(), 50, 30);
+
     textSize(14);
     fill(34, 34, 34);
     text(detailImageData.getCaption().getText(), 7, 557, 480, 100); 
@@ -320,17 +326,12 @@ void drawOpacity()
 {
     noStroke();
     fill(139, 137, 137, 127);
-    rect(0, topBarHeight, width, height);
+    rect(0, topBarHeight, width, height - topBarHeight);
 }
 
-int getCaptionLines(float iWidth)
+int getCaptionLines(String caption)
 {
-    println("Breedte: "+iWidth);
-    int i = 0;
-    int iLines = 0;
-    i = ceil(iWidth / 525);
-
-    return i;
+    return ceil(textWidth(caption) / 525);
 }
 
 int imageIndexForPositionOnScreen(int x, int y)
