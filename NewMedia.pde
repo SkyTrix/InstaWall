@@ -159,62 +159,74 @@ void draw()
         // if there's a finger on screen
         if(leap.getFingerList().size() > 0)
         {
-            pushMatrix();
-            int keyboardMouseYOffset = 200;
-            Finger finger = leap.getFingerList().get(0);
-            PVector position = leap.getTip(finger);
-            translate(position.x, position.y + keyboardMouseYOffset);
-            stroke(0);
-            fill(255);
-            ellipse(0, 0, 15, 15);
-            popMatrix();
-
-            if(position.z < 250)
+            try
             {
-                if(!userPressedDown)
+                pushMatrix();
+                int keyboardMouseYOffset = 200;
+                Finger finger = leap.getFingerList().get(0);
+                PVector position = leap.getTip(finger);
+                translate(position.x, position.y + keyboardMouseYOffset);
+                stroke(0);
+                fill(255);
+                ellipse(0, 0, 15, 15);
+
+                if(position.z < 250)
                 {
-                    // check if press on keyboard
-                    if(!kb.hidden && !kb.animating)
+                    if(!userPressedDown)
                     {
-                        String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
-                        if(key != null)
+                        // check if press on keyboard
+                        if(!kb.hidden && !kb.animating)
                         {
-                            keyboardButtonPressed = true;
-                            handleKeyPressed(key);
-                            println("key: " + key);
-                            mouseX = (int)position.x;
-                            mouseY = (int)position.y + keyboardMouseYOffset;
+                            String key = kb.keyForPositionOnKeyboard((int)position.x, (int)position.y + keyboardMouseYOffset);
+                            if(key != null)
+                            {
+                                keyboardButtonPressed = true;
+                                handleKeyPressed(key);
+                                //println("key: " + key);
+                                mouseX = (int)position.x;
+                                mouseY = (int)position.y + keyboardMouseYOffset;
 
-                            kb.drawOverlayForPosition(mouseX, mouseY);
+                                kb.drawOverlayForPosition(mouseX, mouseY);
+                            }
                         }
-                    }
-                    else if(!kb.animating && !detailMode)
-                    {
-                        // find touched picture
-                        int index = imageIndexForPositionOnScreen((int)position.x, (int)position.y + keyboardMouseYOffset);
-                        if(index != -1)
+                        else if(!kb.animating && !detailMode)
                         {
-                            detailMode = true;
+                            // find touched picture
+                            int index = imageIndexForPositionOnScreen((int)position.x, (int)position.y + keyboardMouseYOffset);
+                            if(index != -1)
+                            {
+                                detailMode = true;
 
-                            detailImageData = instagramMediaFeeds.get(index);
-                            String url = detailImageData.getImages().getStandardResolution().getImageUrl();
-                            println("Touched: " + url);
+                                detailImageData = instagramMediaFeeds.get(index);
+                                String url = detailImageData.getImages().getStandardResolution().getImageUrl();
+                                //println("Touched: " + url);
+                            }
                         }
-                    }
 
-                    userPressedDown = true;
+                        userPressedDown = true;
+                    }
+                }
+                else
+                {
+                    userPressedDown = false;
+                    keyboardButtonPressed = false;
                 }
             }
-            else
+            catch (Exception e)
             {
-                userPressedDown = false;
-                keyboardButtonPressed = false;
+                println(e.getMessage());
+                e.printStackTrace();
+            }
+            finally
+            {
+                popMatrix();
             }
         }
     }
     catch (Exception e)
     {
         println(e.getMessage());
+        e.printStackTrace();
     }
 }
 
@@ -298,7 +310,6 @@ void drawGrid()
 
 void drawDetailView()
 {
-    PImage img = imageLookupMap.get(detailImageData.getId());
     PImage profileImage = getProfileImageForUser(detailImageData.getUser());
     
     int iLikes = detailImageData.getLikes().getCount();
@@ -309,63 +320,80 @@ void drawDetailView()
     String sCreatedTime = detailImageData.getCreatedTime();
     long timestamp = Long.parseLong(sCreatedTime);
     Date d1 = new Date(timestamp*1000);
-
     Date d2 = getCurrentDate();
 
-    long seconds = (d2.getTime()-d1.getTime())/1000;
-    println("seconds: "+seconds);
-
+    long seconds = (d2.getTime() - d1.getTime()) / 1000;
     String shortTime = shortTimeInWords(seconds);
-    println("shortTime: "+shortTime);
 
     fill(#fbfbfb);
     strokeWeight(1);
     stroke(0, 0, 0, 127);
     textFont(createFont("Helvetica", 16));
 
-    pushMatrix();
-    translate((width - 510) / 2, (height - 600) / 2);
-
-    int iLines = getCaptionLines(caption);
-    int iHeight = 560 + (18 * iLines) + 20;
-
-    rect(0, 0, 510, iHeight);
-    image(profileImage, 5, 5, 40, 40);
-    image(img, 5, 50, 500, 500);
-
-    fill(63, 115, 151);
-    textAlign(LEFT);
-    textSize(16);
-
-    if (location != null && location.getName() != null) 
+    try
     {
-        text(sName, 50, 20);
-        image(pinImg, 50, 26, 8, 13);  
+        pushMatrix();
+        translate((width - 510) / 2, (height - 600) / 2);
+
+        int iLines = getCaptionLines(caption);
+        int iHeight = 560 + (18 * iLines) + 20;
+
+        rect(0, 0, 510, iHeight);
+        image(profileImage, 5, 5, 40, 40);
+
+        if(imageLookupMap.containsKey(detailImageData.getId()))
+        {
+            PImage img = imageLookupMap.get(detailImageData.getId());
+            image(img, 5, 50, 500, 500);
+        }
+        else
+        {
+            // draw placeholder
+            image(placeholderImage, 5 + (500 - 47) / 2, 50 + (500 - 36) / 2, 47, 36);
+        }
+
+        fill(63, 115, 151);
+        textAlign(LEFT);
+        textSize(16);
+
+        if (location != null && location.getName() != null)
+        {
+            text(sName, 50, 20);
+            image(pinImg, 50, 26, 8, 13);
+            textSize(15);
+            text(location.getName(), 61, 38);
+        }
+        else
+        {
+            text(sName, 50, 30);
+        }
+
         textSize(15);
-        text(location.getName(), 61, 38);  
+        textAlign(RIGHT);
+        text(shortTime, 463, 17, 40, 20);
+
+        textAlign(LEFT);
+        textSize(14);
+        fill(34, 34, 34);
+
+        if(caption != null && caption.getText() != null)
+        {
+            text(detailImageData.getCaption().getText(), 7, iHeight - 5 - (iLines * 18), 480, 100); 
+        }
+
+        image(heartImg, 7, 556, 12, 12);
+        fill(150, 150, 150);
+        text(iLikes, 25, 566);
     }
-    else 
+    catch(Exception e)
     {
-        text(sName, 50, 30);
+        println(e.getMessage());
+        e.printStackTrace();
     }
-
-    textSize(15);
-    textAlign(RIGHT);
-    text(shortTime, 463, 17, 40, 20);
-
-    textAlign(LEFT);
-    textSize(14);
-    fill(34, 34, 34);
-
-    if(caption != null && caption.getText() != null)
+    finally
     {
-        text(detailImageData.getCaption().getText(), 7, iHeight - 5 - (iLines * 18), 480, 100); 
+        popMatrix();
     }
-
-    image(heartImg, 7, 556, 12, 12);
-    fill(150, 150, 150);
-    text(iLikes, 25, 566);
-    popMatrix();
 }
 
 void drawOpacity()
@@ -453,6 +481,7 @@ void refreshInstagramFeed()
             catch (Exception e)
             {
                 println(e.getMessage());
+                e.printStackTrace();
             }
         }
     }).start();
@@ -478,7 +507,6 @@ void downloadInstagramImages()
                         try
                         {
                             String url = data.getImages().getStandardResolution().getImageUrl();
-                            println(url);
                             PImage img = loadImage(url);
                             imageLookupMap.put(data.getId(), img);
                         }
