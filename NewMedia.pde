@@ -31,14 +31,14 @@ boolean userPressedDown = false;
 
 boolean sketchFullScreen()
 {
-    return true;
+    return false;
 }
 
 void setup()
 {
-    //size(900, 770);
-    size(displayWidth, displayHeight);
-    //if (frame != null) { frame.setResizable(true); }
+    size(900, 770);
+    //size(displayWidth, displayHeight);
+    if (frame != null) { frame.setResizable(true); }
     //noCursor();
 
     clockImage = loadImage("clock.png");
@@ -52,6 +52,28 @@ void setup()
 
     instagram = new Instagram(INSTAGRAM_CLIENT_ID);
     refreshInstagramFeed();
+}
+
+void mousePressed()
+{
+    if(!kb.animating && !detailMode)
+    {
+        // find touched picture
+        int index = imageIndexForPositionOnScreen(mouseX, mouseY);
+        if(index != -1)
+        {
+            detailMode = true;
+
+            detailImageData = instagramMediaFeeds.get(index);
+            String url = detailImageData.getImages().getStandardResolution().getImageUrl();
+            println("Touched: " + url);
+        }
+    }
+    else
+    {
+        detailMode = false;
+        detailImageData = null;
+    }
 }
 
 void draw()
@@ -172,12 +194,12 @@ void drawGrid()
         {
             imagePositions.clear();
 
-            int displayMode = 1;
+            int displayMode = 2;
 
             int i = 0;
 
             int size = 160;
-            int minSpacing = 15;
+            int minSpacing = 20;
             int tilesPerRow = floor(width / (size + minSpacing));
             int rows = floor((height - topBarHeight) / (size + minSpacing));
 
