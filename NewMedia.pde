@@ -140,7 +140,10 @@ void draw()
         }
 
         if(detailMode)
+        {
+            drawOpacity();
             drawDetailView();
+        }
 
         // if there's a finger on screen
         if(leap.getFingerList().size() > 0)
@@ -285,23 +288,49 @@ void drawGrid()
 void drawDetailView()
 {
     PImage img = imageLookupMap.get(detailImageData.getId());
+    String profileImgUrl = detailImageData.getUser().getProfilePictureUrl();
+    PImage profileImg = loadImage(profileImgUrl);
     fill(#fbfbfb);
     strokeWeight(1);
-    stroke(#dbdbdb);
+    stroke(0, 0, 0, 127);
 
     pushMatrix();
     translate((width - 510)/2, (height - 600)/2);
-    rect(0, 0, 510, 600);
+    //rect(0, 0, 510, 600);
     textFont(createFont("Helvetica", 16));
-    image(img, 5, 5, 500, 500);
+
+    float stringWidth = textWidth(detailImageData.getCaption().getText());
+    int iLines = getCaptionLines(stringWidth);
+
+    rect(0, 0, 510, 560 + (18*iLines));
+
+    image(profileImg, 5, 5, 40, 40);
+    image(img, 5, 50, 500, 500);
     fill(63, 115, 151);
     textAlign(LEFT);
     textSize(16);
-    text(detailImageData.getUser().getFullName(), 7, 525);
+    text(detailImageData.getUser().getFullName(), 50, 30);
     textSize(14);
     fill(34, 34, 34);
-    text(detailImageData.getCaption().getText(), 7, 532, 480, 100);
+    text(detailImageData.getCaption().getText(), 7, 557, 480, 100); 
     popMatrix();
+}
+
+void drawOpacity()
+{
+    noStroke();
+    fill(139, 137, 137, 127);
+    rect(0, topBarHeight, width, height);
+}
+
+int getCaptionLines(float iWidth)
+{
+    println("Breedte: "+iWidth);
+    int i = 0;
+    int iLines = 0;
+    i = ceil(iWidth / 525);
+
+    return i;
 }
 
 int imageIndexForPositionOnScreen(int x, int y)
