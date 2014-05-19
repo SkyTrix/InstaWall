@@ -349,8 +349,9 @@ void drawDetailView()
         text(sName, 50, 30);
     }
 
+    textSize(15);
     textAlign(RIGHT);
-    text(shortTime, 460, 17, 40, 20);
+    text(shortTime, 463, 17, 40, 20);
 
     textAlign(LEFT);
     textSize(14);
