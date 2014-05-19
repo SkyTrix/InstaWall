@@ -3,6 +3,10 @@ import com.leapmotion.leap.*;
 import com.leapmotion.leap.Gesture.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 private static final String INSTAGRAM_CLIENT_ID = "***REMOVED***";
 Instagram instagram;
@@ -301,11 +305,15 @@ void drawDetailView()
     Location location = detailImageData.getLocation();
     String sName = detailImageData.getUser().getFullName();
     Caption caption = detailImageData.getCaption();
-    String sCreatedTime = detailImageData.getCreatedTime();
 
+    String sCreatedTime = detailImageData.getCreatedTime();
     long timestamp = Long.parseLong(sCreatedTime);
-    Date date = new Date(timestamp*1000);
-    println(date);
+    Date d1 = new Date(timestamp*1000);
+
+    Date d2 = getCurrentDate();
+
+    long seconds = (d2.getTime()-d1.getTime())/1000;
+    println("seconds: "+seconds);
 
     fill(#fbfbfb);
     strokeWeight(1);
@@ -345,7 +353,7 @@ void drawDetailView()
     {
         text(detailImageData.getCaption().getText(), 7, iHeight - 5 - (iLines * 18), 480, 100); 
     }
-    
+
     image(heartImg, 7, 556, 12, 12);
     fill(150, 150, 150);
     text(iLikes, 25, 566);
@@ -357,6 +365,15 @@ void drawOpacity()
     noStroke();
     fill(139, 137, 137, 127);
     rect(0, topBarHeight, width, height - topBarHeight);
+}
+
+Date getCurrentDate()
+{
+    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    //get current date time with Date()
+    Date date = new Date();
+
+    return date;
 }
 
 int getCaptionLines(Caption caption)
