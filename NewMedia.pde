@@ -535,6 +535,63 @@ PImage getProfileImageForUser(final User user)
     }
 }
 
+String shortTimeInWords(int seconds)
+{
+    if(seconds < 60)
+    {
+        if(seconds < 2)
+        {
+            return "1s";
+        }
+
+        return seconds + "s";
+    }
+
+    int minutes = (int)((double)seconds / 60.0);
+
+    if(minutes >= 0 && minutes < 60)
+    {
+        if(minutes < 2)
+        {
+            return "1m";
+        }
+
+        return minutes + "m";
+    }
+    else if(minutes >= 60 && minutes < 1440)
+    {
+        int hours = (int)((double)minutes / 60.0);
+        if(hours < 2)
+        {
+            return "1h";
+        }
+
+        return hours + "h";
+    }
+    else if(minutes >= 1440 && minutes < 525600)
+    {
+        int days = (int)((double)minutes / 1440.0);
+        if(days < 2)
+        {
+            return "1d";
+        }
+
+        return days + "d";
+    }
+    else if(minutes >= 525600)
+    {
+        int years = (int)((double)minutes / 525600.0);
+        if(years < 2)
+        {
+            return "1y";
+        }
+
+        return years + "y";
+    }
+
+    return "";
+}
+
 /*
     Keyboard
 */
