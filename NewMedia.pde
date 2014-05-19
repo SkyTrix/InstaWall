@@ -302,31 +302,68 @@ void drawGrid()
 void drawDetailView()
 {
     PImage img = imageLookupMap.get(detailImageData.getId());
+    PImage heartImg = loadImage("heart.png");
+    PImage pinImg = loadImage("marker.png");
     String profileImgUrl = detailImageData.getUser().getProfilePictureUrl();
     PImage profileImg = loadImage(profileImgUrl);
+    int iLikes = detailImageData.getLikes().getCount();
+    Location location = detailImageData.getLocation();
+    String sName = detailImageData.getUser().getFullName();
+    Caption caption = detailImageData.getCaption();
+    String sCreatedTime = detailImageData.getCreatedTime();
+
+    long timestamp = Long.parseLong(sCreatedTime);
+    Date date = new Date(timestamp*1000);
+    println(date);
+
     fill(#fbfbfb);
     strokeWeight(1);
     stroke(0, 0, 0, 127);
+    textFont(createFont("Helvetica", 16));
 
     pushMatrix();
     translate((width - 510)/2, (height - 600)/2);
-    //rect(0, 0, 510, 600);
-    textFont(createFont("Helvetica", 16));
 
-    float stringWidth = textWidth(detailImageData.getCaption().getText());
+    //Calculate string width
+    float stringWidth = 0;
+
+    if(caption != null && caption.getText() != null)
+    {
+        stringWidth = textWidth(detailImageData.getCaption().getText());
+    }
+
     int iLines = getCaptionLines(stringWidth);
+    int iHeight = 560 + (18*iLines) + 20;
 
-    rect(0, 0, 510, 560 + (18*iLines));
-
+    rect(0, 0, 510, iHeight);
     image(profileImg, 5, 5, 40, 40);
     image(img, 5, 50, 500, 500);
     fill(63, 115, 151);
     textAlign(LEFT);
     textSize(16);
-    text(detailImageData.getUser().getFullName(), 50, 30);
+
+    if (location != null && location.getName() != null) 
+    {
+        //textFont(createFont("Helvetica", 16));
+        text(sName, 50, 20);
+        image(pinImg, 50, 26, 8, 13);  
+        textSize(15);
+        text(location.getName(), 61, 38);  
+    }
+    else 
+    {
+        text(sName, 50, 30);
+    }
+    
     textSize(14);
     fill(34, 34, 34);
-    text(detailImageData.getCaption().getText(), 7, 557, 480, 100); 
+    if(caption != null && caption.getText() != null)
+    {
+        text(detailImageData.getCaption().getText(), 7, iHeight - 5 - (iLines * 18), 480, 100); 
+    }
+    image(heartImg, 7, 556, 12, 12);
+    fill(150, 150, 150);
+    text(iLikes, 25, 566);
     popMatrix();
 }
 
