@@ -8,6 +8,7 @@ private static final String INSTAGRAM_CLIENT_ID = "***REMOVED***";
 Instagram instagram;
 List<MediaFeedData> instagramMediaFeeds = Collections.synchronizedList(new ArrayList<MediaFeedData>());
 Map<String, PImage> imageLookupMap = new ConcurrentHashMap<String, PImage>();
+Map<String, PImage> profileImageLookupMap = new ConcurrentHashMap<String, PImage>();
 List<ImageRect> imagePositions = new ArrayList<ImageRect>();
 boolean refreshedInstagramFeed = false;
 int refreshInterval = 10000; // milliseconds
@@ -290,10 +291,7 @@ void drawGrid()
 void drawDetailView()
 {
     PImage img = imageLookupMap.get(detailImageData.getId());
-    String profileImgUrl = detailImageData.getUser().getProfilePictureUrl();
-    println(profileImgUrl);
-
-    // get profile image
+    PImage profileImage = getProfileImageForUser(detailImageData.getUser());
 
     fill(#fbfbfb);
     strokeWeight(1);
@@ -447,6 +445,45 @@ void downloadInstagramImages()
     }
 }
 
+PImage getProfileImageForUser(final User user)
+{
+    try
+    {
+        final String id = "" + user.getId();
+        if(!profileImageLookupMap.containsKey(id))
+        {
+            new Thread(new Runnable()
+            {
+                public void run()
+                {
+                    try
+                    {
+                        String profileImageUrl = user.getProfilePictureUrl();
+                        PImage img = loadImage(profileImageUrl);
+                        profileImageLookupMap.put(id, img);
+                    }
+                    catch (Exception e)
+                    {
+                        println(e.getMessage());
+                    }
+                }
+            }).start();
+
+            return profileImage;
+        }
+        else
+        {
+            return profileImageLookupMap.get(id);
+        }
+    }
+    catch (Exception e)
+    {
+        println(e.getMessage());
+
+        return profileImage;
+    }
+}
+
 /*
     Keyboard
 */
@@ -478,14 +515,6 @@ public void swipeGestureRecognized(SwipeGesture gesture)
 {
     if (gesture.state() == State.STATE_STOP)
     {
-        // System.out.println("//////////////////////////////////////");
-        // System.out.println("Gesture type: " + gesture.type());
-        // System.out.println("ID: " + gesture.id());
-        // System.out.println("Position: " + leap.vectorToPVector(gesture.position()));
-        // System.out.println("Direction: " + gesture.direction());
-        // System.out.println("Duration: " + gesture.durationSeconds() + "s");
-        // System.out.println("//////////////////////////////////////");
-
         int passedTime = millis() - lastGestureTime;
         if (passedTime > 2000)
         {
