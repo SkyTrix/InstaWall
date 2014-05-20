@@ -47,7 +47,7 @@ void setup()
     //size(900, 770);
     size(displayWidth, displayHeight);
     //if (frame != null) { frame.setResizable(true); }
-    //noCursor();
+    noCursor();
 
     clockImage = loadImage("clock.png");
     placeholderImage = loadImage("camera.png");
@@ -239,6 +239,11 @@ void drawTopBar()
     textSize(24);
     textAlign(LEFT);
     text("#" + hashtag, 10, 30);
+
+    textAlign(CENTER);
+    text("INSTAWALL", 0, 7, width, 30);
+
+    textAlign(LEFT);
     text(nf(hour(), 2) + ":" + nf(minute(), 2), width - 77, 30);
     image(clockImage, width - 108, 9, 26, 26);
 }
