@@ -8,7 +8,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-private static final String INSTAGRAM_CLIENT_ID = "***REMOVED***";
+private static final String INSTAGRAM_CLIENT_ID = "";
 Instagram instagram;
 List<MediaFeedData> instagramMediaFeeds = Collections.synchronizedList(new ArrayList<MediaFeedData>());
 Map<String, PImage> imageLookupMap = new ConcurrentHashMap<String, PImage>();
